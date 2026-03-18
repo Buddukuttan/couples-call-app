@@ -1,0 +1,1959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Together - Private Video Calls for Couples">
+    <meta name="theme-color" content="#FF6B9D">
+    <title>Together - Private Video Calls</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    
+    <!-- Daily.co Script -->
+    <script src="https://unpkg.com/@daily-co/daily-js"></script>
+    
+    <!-- Firebase Scripts (Global SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        /* ==================== RESET & BASE ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            overflow: hidden;
+        }
+
+        /* ==================== COLORS & THEME ==================== */
+        :root {
+            --primary: #FF6B9D;
+            --primary-dark: #E63384;
+            --secondary: #667eea;
+            --accent: #FFA502;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --light: #f8f9fa;
+            --dark: #2c3e50;
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --border-light: #ecf0f1;
+        }
+
+        /* ==================== ANIMATIONS ==================== */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes zoomIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(255, 107, 157, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(255, 107, 157, 0.6);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes rotateIn {
+            from {
+                opacity: 0;
+                transform: rotate(-10deg) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: rotate(0) scale(1);
+            }
+        }
+
+        .fade-in { animation: fadeIn 0.6s ease-out; }
+        .slide-in-left { animation: slideInLeft 0.6s ease-out; }
+        .slide-in-right { animation: slideInRight 0.6s ease-out; }
+        .zoom-in { animation: zoomIn 0.5s ease-out; }
+        .float { animation: float 3s ease-in-out infinite; }
+        .pulse { animation: pulse 2s ease-in-out infinite; }
+        .glow { animation: glow 2s ease-in-out infinite; }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ==================== TYPOGRAPHY ==================== */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        h1 { font-size: 3.5rem; letter-spacing: -2px; }
+        h2 { font-size: 2.5rem; letter-spacing: -1px; }
+        h3 { font-size: 1.8rem; }
+        h4 { font-size: 1.3rem; }
+
+        p { line-height: 1.6; color: var(--text-secondary); }
+
+        /* ==================== BUTTONS ==================== */
+        button {
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 28px;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            transform: scale(1.08) translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.3);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 15px 40px rgba(255, 107, 157, 0.5);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--secondary) 0%, #5568d3 100%);
+            color: white;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 2.5px solid var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #c0392b 100%);
+            color: white;
+        }
+
+        .btn-small {
+            padding: 10px 18px;
+            font-size: 13px;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* ==================== FORMS ==================== */
+        input, textarea, select {
+            font-family: 'Poppins', sans-serif;
+            padding: 14px 18px;
+            border: 2.5px solid var(--border-light);
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            width: 100%;
+            background: white;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(255, 107, 157, 0.1);
+            transform: scale(1.02);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, var(--danger) 0%, #c0392b 100%);
+            color: white;
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border-left: 4px solid #c0392b;
+            font-size: 14px;
+            animation: slideInLeft 0.3s ease-out;
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, var(--success) 0%, #27ae60 100%);
+            color: white;
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border-left: 4px solid #27ae60;
+            font-size: 14px;
+            animation: slideInLeft 0.3s ease-out;
+        }
+
+        /* ==================== CARDS ==================== */
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        /* ==================== PAGES ==================== */
+        .page {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        /* ==================== BACKGROUND ANIMATION ==================== */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .blob1 {
+            width: 300px;
+            height: 300px;
+            background: #FF6B9D;
+            top: -50px;
+            left: -50px;
+            animation-delay: 0s;
+        }
+
+        .blob2 {
+            width: 250px;
+            height: 250px;
+            background: #FFA502;
+            bottom: -50px;
+            right: -50px;
+            animation-delay: 2s;
+        }
+
+        .blob3 {
+            width: 200px;
+            height: 200px;
+            background: #2ecc71;
+            top: 50%;
+            right: 10%;
+            animation-delay: 4s;
+        }
+
+        /* ==================== AUTH PAGE ==================== */
+        #auth-page {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 500px;
+            animation: zoomIn 0.6s ease-out;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 24px;
+            padding: 48px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .auth-emoji {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .auth-header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .auth-header p {
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+
+        .auth-toggle {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 28px;
+            background: var(--light);
+            padding: 6px;
+            border-radius: 12px;
+        }
+
+        .auth-toggle button {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .auth-toggle button.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.2);
+            transform: scale(1.05);
+        }
+
+        /* ==================== PARTNER LINK MODAL ==================== */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-out;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            animation: zoomIn 0.4s ease-out;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: var(--primary);
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        /* ==================== DASHBOARD PAGE ==================== */
+        #dashboard-page {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 0;
+        }
+
+        .dashboard-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 24px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 24px;
+            box-shadow: 0 8px 20px rgba(255, 107, 157, 0.3);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .user-details h3 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .user-details p {
+            margin: 4px 0 0 0;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .dashboard-content {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 24px;
+            padding: 24px 40px;
+            overflow: hidden;
+        }
+
+        .dashboard-left {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            overflow-y: auto;
+            padding-right: 12px;
+        }
+
+        .dashboard-right {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            overflow-y: auto;
+            padding-right: 12px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .call-invitations {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .invitation-card {
+            background: white;
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: slideInLeft 0.5s ease-out;
+        }
+
+        .invitation-card:hover {
+            transform: translateX(10px) translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .invitation-info h4 {
+            margin: 0 0 6px 0;
+            font-size: 16px;
+        }
+
+        .invitation-info p {
+            margin: 0;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .create-call-form {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .participants-list {
+            background: var(--light);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 16px;
+            max-height: 140px;
+            overflow-y: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .participant-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            animation: zoomIn 0.3s ease-out;
+        }
+
+        .participant-tag button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 0;
+            font-size: 16px;
+            line-height: 1;
+            transition: all 0.2s ease;
+        }
+
+        .participant-tag button:hover {
+            transform: scale(1.3) rotate(90deg);
+        }
+
+        /* ==================== CHAT SECTION ==================== */
+        .chat-container {
+            background: white;
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-right: 8px;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 8px;
+            animation: slideInLeft 0.3s ease-out;
+        }
+
+        .message.sent {
+            justify-content: flex-end;
+        }
+
+        .message.received {
+            justify-content: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            word-wrap: break-word;
+            transition: all 0.3s ease;
+        }
+
+        .message.sent .message-bubble {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 12px rgba(255, 107, 157, 0.3);
+        }
+
+        .message.sent .message-bubble:hover {
+            transform: scale(1.05);
+        }
+
+        .message.received .message-bubble {
+            background: var(--light);
+            color: var(--text-primary);
+            border-bottom-left-radius: 4px;
+            border: 2px solid var(--border-light);
+        }
+
+        .message.received .message-bubble:hover {
+            background: #f0f0f0;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            padding: 0 12px;
+        }
+
+        .chat-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input-group input {
+            flex: 1;
+            margin: 0;
+        }
+
+        .chat-input-group button {
+            padding: 12px 18px;
+            margin: 0;
+        }
+
+        .chat-locked {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .chat-locked-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* ==================== CALL PAGE ==================== */
+        #call-page {
+            background: #000;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .call-header {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .call-header h3 {
+            color: white;
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .call-mode-indicator {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        .call-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .daily-iframe-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        .call-controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 16px;
+            z-index: 200;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(15px);
+            padding: 18px 24px;
+            border-radius: 60px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-btn {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            font-size: 22px;
+            padding: 0;
+            font-weight: 600;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.15) translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
+        }
+
+        .control-btn.active {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-color: rgba(255, 107, 157, 0.8);
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.4);
+        }
+
+        .control-btn.end-call {
+            background: rgba(231, 76, 60, 0.7);
+            border-color: rgba(231, 76, 60, 0.8);
+        }
+
+        .control-btn.end-call:hover {
+            background: rgba(231, 76, 60, 0.9);
+            transform: scale(1.15) translateY(-5px) rotate(10deg);
+        }
+
+        .control-btn.switch-mode {
+            transition: all 0.3s ease;
+        }
+
+        .control-btn.switch-mode.hidden-mode {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0);
+        }
+
+        .switching-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 24px 48px;
+            border-radius: 16px;
+            font-size: 18px;
+            z-index: 300;
+            animation: zoomIn 0.3s ease;
+            font-weight: 700;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        /* ==================== SCROLLBAR STYLING ==================== */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 107, 157, 0.4);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 107, 157, 0.6);
+        }
+
+        /* ==================== RESPONSIVE ==================== */
+        @media (max-width: 1024px) {
+            .dashboard-content {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-right {
+                max-height: 300px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            h2 { font-size: 1.8rem; }
+
+            .page {
+                padding: 10px;
+            }
+
+            .auth-card {
+                padding: 32px 24px;
+            }
+
+            .dashboard-header {
+                padding: 16px 20px;
+            }
+
+            .dashboard-content {
+                padding: 16px 20px;
+                gap: 16px;
+            }
+
+            .call-controls {
+                bottom: 16px;
+                padding: 14px 18px;
+                gap: 10px;
+            }
+
+            .control-btn {
+                width: 46px;
+                height: 46px;
+                font-size: 18px;
+            }
+
+            .message-bubble {
+                max-width: 85%;
+            }
+
+            .modal-content {
+                padding: 28px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="blob blob1"></div>
+        <div class="blob blob2"></div>
+        <div class="blob blob3"></div>
+    </div>
+
+    <!-- ==================== AUTH PAGE ==================== -->
+    <div id="auth-page" class="page">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <div class="auth-emoji">💕</div>
+                    <h1>Together</h1>
+                    <p>Private video calls for couples</p>
+                </div>
+
+                <div class="auth-toggle">
+                    <button class="active" onclick="toggleAuthMode('login')">Sign In</button>
+                    <button onclick="toggleAuthMode('signup')">Sign Up</button>
+                </div>
+
+                <div id="auth-error" class="error-message hidden"></div>
+
+                <!-- Login Form -->
+                <div id="login-form">
+                    <div class="form-group">
+                        <label>📧 Email</label>
+                        <input type="email" id="login-email" placeholder="your@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>🔐 Password</label>
+                        <input type="password" id="login-password" placeholder="••••••••">
+                    </div>
+                    <button class="btn-primary" style="width: 100%; margin-top: 10px;" onclick="handleLogin()">Sign In</button>
+                </div>
+
+                <!-- Signup Form -->
+                <div id="signup-form" class="hidden">
+                    <div class="form-group">
+                        <label>📧 Email</label>
+                        <input type="email" id="signup-email" placeholder="your@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>🔐 Password</label>
+                        <input type="password" id="signup-password" placeholder="••••••••">
+                    </div>
+                    <div class="form-group">
+                        <label>🔐 Confirm Password</label>
+                        <input type="password" id="signup-confirm" placeholder="••••••••">
+                    </div>
+                    <button class="btn-primary" style="width: 100%; margin-top: 10px;" onclick="handleSignup()">Create Account</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== PROFILE SETUP PAGE ==================== -->
+    <div id="profile-setup-page" class="page hidden">
+        <div class="auth-container">
+            <div class="auth-card">
+                <h2 style="text-align: center; margin-bottom: 28px;">👤 Create Your Profile</h2>
+
+                <div id="profile-error" class="error-message hidden"></div>
+
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="profile-name" placeholder="Your full name">
+                </div>
+
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="profile-username" placeholder="yourname" onchange="this.value = this.value.toLowerCase().replace(/\s/g, '')">
+                </div>
+
+                <div class="form-group">
+                    <label>Age</label>
+                    <input type="number" id="profile-age" placeholder="18" min="18">
+                </div>
+
+                <div class="form-group">
+                    <label>Gender</label>
+                    <select id="profile-gender">
+                        <option value="">Select gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Display Nickname</label>
+                    <input type="text" id="profile-nickname" placeholder="What your partner calls you">
+                </div>
+
+                <button class="btn-primary" style="width: 100%;" onclick="handleProfileSetup()">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== DASHBOARD PAGE ==================== -->
+    <div id="dashboard-page" class="hidden">
+        <div class="dashboard-header">
+            <div class="user-section">
+                <div class="user-avatar" id="user-avatar">U</div>
+                <div class="user-details">
+                    <h3 id="user-name">User</h3>
+                    <p id="user-username">@username</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-secondary btn-small" onclick="openPartnerLinkModal()">🔗 Link Partner</button>
+                <button class="btn-outline btn-small" onclick="handleLogout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="dashboard-content">
+            <!-- Left Column: Calls -->
+            <div class="dashboard-left">
+                <div>
+                    <h3 class="section-title">📞 Call Invitations</h3>
+                    <div id="call-invitations" class="call-invitations">
+                        <p style="text-align: center; color: rgba(255, 255, 255, 0.7); padding: 20px;">No active invitations</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="section-title">➕ Create Group Call</h3>
+                    <div class="create-call-form">
+                        <div class="form-group">
+                            <label>Room Name</label>
+                            <input type="text" id="room-name" placeholder="e.g., Movie Night">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Add Participants</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="participant-input" placeholder="username" onchange="this.value = this.value.toLowerCase().replace(/\s/g, '')">
+                                <button class="btn-secondary btn-small" onclick="addParticipant()">Add</button>
+                            </div>
+                        </div>
+
+                        <div id="participants-container">
+                            <div class="participants-list" id="participants-list"></div>
+                        </div>
+
+                        <button class="btn-primary" style="width: 100%;" onclick="handleStartCall()">🎬 Start Call</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Chat -->
+            <div class="dashboard-right">
+                <h3 class="section-title">💬 Chat with Partner</h3>
+                <div class="chat-container">
+                    <div id="chat-locked" class="chat-locked">
+                        <div class="chat-locked-icon">🔒</div>
+                        <p>Link a partner to start chatting</p>
+                        <button class="btn-primary btn-small" style="margin-top: 12px;" onclick="openPartnerLinkModal()">Link Partner</button>
+                    </div>
+                    <div id="chat-content" class="hidden">
+                        <div id="chat-messages" class="chat-messages"></div>
+                        <div class="chat-input-group">
+                            <input type="text" id="chat-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMessage()">
+                            <button class="btn-primary" onclick="sendMessage()">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== PARTNER LINK MODAL ==================== -->
+    <div id="partner-link-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔗 Link Your Partner</h2>
+                <button class="close-btn" onclick="closePartnerLinkModal()">✕</button>
+            </div>
+
+            <p style="color: var(--text-secondary); margin-bottom: 24px;">Enter your partner's username to link your accounts and start chatting.</p>
+
+            <div id="link-error" class="error-message hidden"></div>
+
+            <div class="form-group">
+                <label>Partner's Username</label>
+                <input type="text" id="partner-username" placeholder="partner's username" onchange="this.value = this.value.toLowerCase().replace(/\s/g, '')">
+            </div>
+
+            <div style="display: flex; gap: 12px;">
+                <button class="btn-outline" style="flex: 1;" onclick="closePartnerLinkModal()">Cancel</button>
+                <button class="btn-primary" style="flex: 1;" onclick="handlePartnerLink()">Link Partner</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== CALL PAGE ==================== -->
+    <div id="call-page" class="page hidden">
+        <div class="call-header">
+            <div>
+                <h3 id="call-room-name">Room Name</h3>
+                <p style="margin: 6px 0 0 0; font-size: 13px;">👥 Participants: <span id="call-participant-count">0</span></p>
+            </div>
+            <div class="call-mode-indicator" id="call-mode-indicator">Couples Mode</div>
+        </div>
+
+        <div class="call-container">
+            <div class="daily-iframe-container" id="daily-iframe-container"></div>
+            <div class="call-controls">
+                <button class="control-btn" id="video-toggle" onclick="toggleVideo()" title="Toggle Video">📹</button>
+                <button class="control-btn" id="audio-toggle" onclick="toggleAudio()" title="Toggle Audio">🎤</button>
+                <button class="control-btn" id="mute-all-btn" onclick="muteAll()" title="Mute All">🔇</button>
+                <button class="control-btn switch-mode" id="switch-mode-btn" onclick="switchRooms()" title="Switch Mode (S)">🔄</button>
+                <button class="control-btn end-call" onclick="endCall()" title="End Call">📞</button>
+            </div>
+            <div id="switching-indicator" class="switching-indicator hidden">Switching...</div>
+        </div>
+    </div>
+
+    <script>
+        /*
+        ==================== DAILY.CO SETUP (5 minutes) ====================
+        1. Go to https://dashboard.daily.co/
+        2. Sign up for free account
+        3. Your domain will be assigned (e.g., 'abc123.daily.co')
+        4. Copy your domain name (just the 'abc123' part)
+        5. Replace DAILY_DOMAIN in code with your domain
+        6. No API key needed for basic usage!
+        7. Free tier: 10,000 minutes/month (plenty for personal use)
+        */
+
+        // ==================== CONFIGURATION ====================
+        const DAILY_DOMAIN = 'togetherbuddu';
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDG9tCr9fOKFH5soE81jVkHqyKH_Y3oGHA",
+            authDomain: "together-app-94fec.firebaseapp.com",
+            projectId: "together-app-94fec",
+            storageBucket: "together-app-94fec.firebasestorage.app",
+            messagingSenderId: "966086197089",
+            appId: "1:966086197089:web:05542ebee4ad0b7ea80f20"
+        };
+
+        // ==================== STATE MANAGEMENT ====================
+        let state = {
+            currentUser: null,
+            currentUserData: null,
+            callFrame: null,
+            currentCallParticipants: [],
+            currentCallRoom: null,
+            isInSafeMode: false,
+            videoEnabled: true,
+            audioEnabled: true,
+            messageUnsubscribe: null,
+            callsUnsubscribe: null,
+            selectedParticipants: [],
+            currentCallData: null
+        };
+
+        // ==================== FIREBASE INITIALIZATION ====================
+        let auth, db;
+        
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            auth = firebase.auth();
+            db = firebase.firestore();
+            console.log('Firebase initialized successfully');
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+            console.error('Firebase Config:', firebaseConfig);
+        }
+
+        // ==================== AUTH STATE LISTENER ====================
+        if (auth) {
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    state.currentUser = user;
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    
+                    if (!userDoc.exists) {
+                        showPage('profile-setup-page');
+                    } else {
+                        state.currentUserData = userDoc.data();
+                        loadDashboard();
+                    }
+                } else {
+                    state.currentUser = null;
+                    state.currentUserData = null;
+                    cleanupListeners();
+                    showPage('auth-page');
+                }
+            });
+        }
+
+        // ==================== PAGE MANAGEMENT ====================
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.add('hidden');
+            });
+            document.getElementById(pageId).classList.remove('hidden');
+        }
+
+        // ==================== AUTH FUNCTIONS ====================
+        function toggleAuthMode(mode) {
+            document.querySelectorAll('.auth-toggle button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            if (mode === 'login') {
+                document.getElementById('login-form').classList.remove('hidden');
+                document.getElementById('signup-form').classList.add('hidden');
+            } else {
+                document.getElementById('login-form').classList.add('hidden');
+                document.getElementById('signup-form').classList.remove('hidden');
+            }
+        }
+
+        function clearAuthError() {
+            document.getElementById('auth-error').classList.add('hidden');
+        }
+
+        function showAuthError(message) {
+            document.getElementById('auth-error').textContent = message;
+            document.getElementById('auth-error').classList.remove('hidden');
+        }
+
+        async function handleLogin() {
+            clearAuthError();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            if (!email || !password) {
+                showAuthError('Please fill in all fields');
+                return;
+            }
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+            } catch (error) {
+                showAuthError(error.message);
+            }
+        }
+
+        async function handleSignup() {
+            clearAuthError();
+            const email = document.getElementById('signup-email').value.trim();
+            const password = document.getElementById('signup-password').value;
+            const confirm = document.getElementById('signup-confirm').value;
+
+            if (!email || !password || !confirm) {
+                showAuthError('Please fill in all fields');
+                return;
+            }
+
+            if (password !== confirm) {
+                showAuthError('Passwords do not match');
+                return;
+            }
+
+            if (password.length < 6) {
+                showAuthError('Password must be at least 6 characters');
+                return;
+            }
+
+            try {
+                await auth.createUserWithEmailAndPassword(email, password);
+            } catch (error) {
+                showAuthError(error.message);
+            }
+        }
+
+        // ==================== PROFILE SETUP ====================
+        async function handleProfileSetup() {
+            const name = document.getElementById('profile-name').value.trim();
+            const username = document.getElementById('profile-username').value.trim();
+            const age = document.getElementById('profile-age').value;
+            const gender = document.getElementById('profile-gender').value;
+            const nickname = document.getElementById('profile-nickname').value.trim();
+
+            const errorEl = document.getElementById('profile-error');
+            errorEl.classList.add('hidden');
+
+            if (!name || !username || !age || !gender || !nickname) {
+                errorEl.textContent = 'Please fill in all fields';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            if (username.length < 3) {
+                errorEl.textContent = 'Username must be at least 3 characters';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const existing = await db.collection('users').where('username', '==', username).get();
+                if (!existing.empty) {
+                    errorEl.textContent = 'Username already taken';
+                    errorEl.classList.remove('hidden');
+                    return;
+                }
+
+                await db.collection('users').doc(state.currentUser.uid).set({
+                    name,
+                    username,
+                    age: parseInt(age),
+                    gender,
+                    nickname,
+                    email: state.currentUser.email,
+                    createdAt: new Date(),
+                    partnerId: null
+                });
+
+                state.currentUserData = { name, username, age, gender, nickname, email: state.currentUser.email, partnerId: null };
+                loadDashboard();
+            } catch (error) {
+                errorEl.textContent = error.message;
+                errorEl.classList.remove('hidden');
+            }
+        }
+
+        // ==================== PARTNER LINKING ====================
+        function openPartnerLinkModal() {
+            document.getElementById('partner-link-modal').classList.remove('hidden');
+            document.getElementById('partner-username').focus();
+        }
+
+        function closePartnerLinkModal() {
+            document.getElementById('partner-link-modal').classList.add('hidden');
+            document.getElementById('partner-username').value = '';
+            document.getElementById('link-error').classList.add('hidden');
+        }
+
+        async function handlePartnerLink() {
+            const partnerUsername = document.getElementById('partner-username').value.trim();
+            const errorEl = document.getElementById('link-error');
+            errorEl.classList.add('hidden');
+
+            if (!partnerUsername) {
+                errorEl.textContent = 'Please enter partner username';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const partnerQuery = await db.collection('users').where('username', '==', partnerUsername).get();
+                
+                if (partnerQuery.empty) {
+                    errorEl.textContent = 'Partner not found';
+                    errorEl.classList.remove('hidden');
+                    return;
+                }
+
+                const partnerId = partnerQuery.docs[0].id;
+
+                await db.collection('users').doc(state.currentUser.uid).update({
+                    partnerId: partnerId
+                });
+
+                await db.collection('users').doc(partnerId).update({
+                    partnerId: state.currentUser.uid
+                });
+
+                state.currentUserData.partnerId = partnerId;
+                closePartnerLinkModal();
+                loadChat();
+                
+                // Show success message
+                const successMsg = document.createElement('div');
+                successMsg.className = 'success-message';
+                successMsg.textContent = '✅ Partner linked successfully!';
+                document.querySelector('.dashboard-right').prepend(successMsg);
+                setTimeout(() => successMsg.remove(), 3000);
+            } catch (error) {
+                errorEl.textContent = error.message;
+                errorEl.classList.remove('hidden');
+            }
+        }
+
+        // ==================== DASHBOARD ====================
+        async function loadDashboard() {
+            showPage('dashboard-page');
+            updateUserHeader();
+            
+            if (state.currentUserData.partnerId) {
+                loadChat();
+            }
+
+            listenForCallInvitations();
+        }
+
+        function updateUserHeader() {
+            const avatar = state.currentUserData.name.charAt(0).toUpperCase();
+            document.getElementById('user-avatar').textContent = avatar;
+            document.getElementById('user-name').textContent = state.currentUserData.name;
+            document.getElementById('user-username').textContent = '@' + state.currentUserData.username;
+        }
+
+        // ==================== CALL INVITATIONS ====================
+        function listenForCallInvitations() {
+            if (state.callsUnsubscribe) {
+                state.callsUnsubscribe();
+            }
+
+            state.callsUnsubscribe = db.collection('calls')
+                .where('participantUsernames', 'array-contains', state.currentUserData.username)
+                .where('status', '==', 'active')
+                .onSnapshot(snapshot => {
+                    const invitations = [];
+                    snapshot.forEach(doc => {
+                        const call = doc.data();
+                        if (call.createdBy !== state.currentUser.uid) {
+                            invitations.push({ id: doc.id, ...call });
+                        }
+                    });
+
+                    displayInvitations(invitations);
+                });
+        }
+
+        function displayInvitations(invitations) {
+            const container = document.getElementById('call-invitations');
+            
+            if (invitations.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: rgba(255, 255, 255, 0.7); padding: 20px;">No active invitations</p>';
+                return;
+            }
+
+            container.innerHTML = invitations.map(call => `
+                <div class="invitation-card">
+                    <div class="invitation-info">
+                        <h4>${escapeHtml(call.roomName)}</h4>
+                        <p>Created by ${escapeHtml(call.createdByName)} • ${call.participants.length} participants</p>
+                    </div>
+                    <button class="btn-primary btn-small" onclick="joinCall('${call.id}')">Join</button>
+                </div>
+            `).join('');
+        }
+
+        function addParticipant() {
+            const input = document.getElementById('participant-input');
+            const username = input.value.trim();
+
+            if (!username) return;
+            if (state.selectedParticipants.includes(username)) {
+                alert('Participant already added');
+                return;
+            }
+
+            state.selectedParticipants.push(username);
+            input.value = '';
+            updateParticipantsList();
+        }
+
+        function removeParticipant(username) {
+            state.selectedParticipants = state.selectedParticipants.filter(p => p !== username);
+            updateParticipantsList();
+        }
+
+        function updateParticipantsList() {
+            const container = document.getElementById('participants-list');
+            if (state.selectedParticipants.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = state.selectedParticipants.map(username => `
+                <div class="participant-tag">
+                    ${escapeHtml(username)}
+                    <button onclick="removeParticipant('${username}')">×</button>
+                </div>
+            `).join('');
+        }
+
+        async function handleStartCall() {
+            const roomName = document.getElementById('room-name').value.trim();
+            
+            if (!roomName) {
+                alert('Please enter a room name');
+                return;
+            }
+
+            if (state.selectedParticipants.length === 0) {
+                alert('Please add at least one participant');
+                return;
+            }
+
+            try {
+                const roomId = generateRoomId();
+                const participants = [state.currentUserData.username, ...state.selectedParticipants];
+
+                await db.collection('calls').add({
+                    roomName,
+                    roomId,
+                    createdBy: state.currentUser.uid,
+                    createdByName: state.currentUserData.name,
+                    participants: participants,
+                    participantUsernames: participants,
+                    createdAt: new Date(),
+                    status: 'active'
+                });
+
+                startCall(roomName, roomId, participants);
+
+                document.getElementById('room-name').value = '';
+                state.selectedParticipants = [];
+                updateParticipantsList();
+            } catch (error) {
+                alert('Error creating call: ' + error.message);
+            }
+        }
+
+        async function joinCall(callId) {
+            try {
+                const callDoc = await db.collection('calls').doc(callId).get();
+                const call = callDoc.data();
+                startCall(call.roomName, call.roomId, call.participants);
+            } catch (error) {
+                alert('Error joining call: ' + error.message);
+            }
+        }
+
+        // ==================== VIDEO CALLING ====================
+        function startCall(roomName, roomId, participants) {
+            state.currentCallRoom = roomId;
+            state.currentCallParticipants = participants;
+            state.isInSafeMode = false;
+            state.videoEnabled = true;
+            state.audioEnabled = true;
+
+            document.getElementById('call-room-name').textContent = roomName;
+            document.getElementById('call-participant-count').textContent = participants.length;
+            document.getElementById('call-mode-indicator').textContent = 'Couples Mode';
+
+            showPage('call-page');
+            initDailyCall(roomId + '-couples', state.currentUserData.nickname);
+        }
+
+        function initDailyCall(roomUrl, displayName) {
+            const container = document.getElementById('daily-iframe-container');
+            container.innerHTML = '';
+
+            const fullUrl = `https://${DAILY_DOMAIN}.daily.co/${roomUrl}`;
+
+            state.callFrame = window.DailyIframe.createFrame(container, {
+                url: fullUrl,
+                showLeaveButton: false,
+                showFullscreenButton: false,
+                iframeStyle: {
+                    width: '100%',
+                    height: '100%',
+                    border: 'none'
+                }
+            });
+
+            state.callFrame.on('loaded', () => {
+                state.callFrame.setUserName(displayName);
+            });
+
+            state.callFrame.on('left-meeting', () => {
+                endCall();
+            });
+
+            updateControlButtons();
+        }
+
+        function switchRooms() {
+            if (!state.callFrame) return;
+
+            const indicator = document.getElementById('switching-indicator');
+            indicator.classList.remove('hidden');
+
+            state.isInSafeMode = !state.isInSafeMode;
+            const newMode = state.isInSafeMode ? 'Safe Mode' : 'Couples Mode';
+            const newSuffix = state.isInSafeMode 
+                ? (state.currentUserData.gender === 'male' ? '-boys' : '-girls')
+                : '-couples';
+
+            state.callFrame.leave().then(() => {
+                setTimeout(() => {
+                    const newRoomUrl = state.currentCallRoom + newSuffix;
+                    const fullUrl = `https://${DAILY_DOMAIN}.daily.co/${newRoomUrl}`;
+
+                    state.callFrame.destroy();
+
+                    const container = document.getElementById('daily-iframe-container');
+                    container.innerHTML = '';
+
+                    state.callFrame = window.DailyIframe.createFrame(container, {
+                        url: fullUrl,
+                        showLeaveButton: false,
+                        showFullscreenButton: false,
+                        iframeStyle: {
+                            width: '100%',
+                            height: '100%',
+                            border: 'none'
+                        }
+                    });
+
+                    state.callFrame.on('loaded', () => {
+                        state.callFrame.setUserName(state.currentUserData.nickname);
+                    });
+
+                    state.callFrame.on('left-meeting', () => {
+                        endCall();
+                    });
+
+                    document.getElementById('call-mode-indicator').textContent = newMode;
+                    updateSwitchButton();
+                    updateControlButtons();
+                    indicator.classList.add('hidden');
+                }, 300);
+            });
+        }
+
+        function toggleVideo() {
+            state.videoEnabled = !state.videoEnabled;
+            if (state.callFrame) {
+                state.callFrame.setLocalVideo(state.videoEnabled);
+            }
+            updateControlButtons();
+        }
+
+        function toggleAudio() {
+            state.audioEnabled = !state.audioEnabled;
+            if (state.callFrame) {
+                state.callFrame.setLocalAudio(state.audioEnabled);
+            }
+            updateControlButtons();
+        }
+
+        function muteAll() {
+            state.videoEnabled = false;
+            state.audioEnabled = false;
+            if (state.callFrame) {
+                state.callFrame.setLocalVideo(false);
+                state.callFrame.setLocalAudio(false);
+            }
+            updateControlButtons();
+        }
+
+        function updateControlButtons() {
+            const videoBtn = document.getElementById('video-toggle');
+            const audioBtn = document.getElementById('audio-toggle');
+
+            if (state.videoEnabled) {
+                videoBtn.classList.add('active');
+            } else {
+                videoBtn.classList.remove('active');
+            }
+
+            if (state.audioEnabled) {
+                audioBtn.classList.add('active');
+            } else {
+                audioBtn.classList.remove('active');
+            }
+
+            updateSwitchButton();
+        }
+
+        function updateSwitchButton() {
+            const switchBtn = document.getElementById('switch-mode-btn');
+            if (state.isInSafeMode) {
+                switchBtn.classList.add('hidden-mode');
+            } else {
+                switchBtn.classList.remove('hidden-mode');
+            }
+        }
+
+        async function endCall() {
+            if (state.callFrame) {
+                await state.callFrame.leave();
+                state.callFrame.destroy();
+                state.callFrame = null;
+            }
+
+            try {
+                const callsQuery = await db.collection('calls')
+                    .where('roomId', '==', state.currentCallRoom)
+                    .where('createdBy', '==', state.currentUser.uid)
+                    .get();
+
+                callsQuery.forEach(doc => {
+                    doc.ref.update({ status: 'ended' });
+                });
+            } catch (error) {
+                console.error('Error ending call:', error);
+            }
+
+            state.currentCallRoom = null;
+            state.currentCallParticipants = [];
+            state.isInSafeMode = false;
+
+            loadDashboard();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 's' && state.callFrame) {
+                switchRooms();
+            }
+        });
+
+        // ==================== CHAT SYSTEM ====================
+        function loadChat() {
+            const chatLocked = document.getElementById('chat-locked');
+            const chatContent = document.getElementById('chat-content');
+
+            if (!state.currentUserData.partnerId) {
+                chatLocked.classList.remove('hidden');
+                chatContent.classList.add('hidden');
+                return;
+            }
+
+            chatLocked.classList.add('hidden');
+            chatContent.classList.remove('hidden');
+
+            listenForMessages();
+        }
+
+        function getChatId() {
+            const ids = [state.currentUser.uid, state.currentUserData.partnerId].sort();
+            return ids.join('_');
+        }
+
+        function listenForMessages() {
+            if (state.messageUnsubscribe) {
+                state.messageUnsubscribe();
+            }
+
+            const chatId = getChatId();
+
+            state.messageUnsubscribe = db.collection('chats')
+                .doc(chatId)
+                .collection('messages')
+                .orderBy('timestamp', 'asc')
+                .onSnapshot(snapshot => {
+                    const messagesContainer = document.getElementById('chat-messages');
+                    messagesContainer.innerHTML = '';
+
+                    snapshot.forEach(doc => {
+                        const message = doc.data();
+                        const isSent = message.senderId === state.currentUser.uid;
+                        const timestamp = new Date(message.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                        messagesContainer.innerHTML += `
+                            <div class="message ${isSent ? 'sent' : 'received'}">
+                                <div>
+                                    <div class="message-bubble">${escapeHtml(message.text)}</div>
+                                    <div class="message-time">${timestamp}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                });
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+
+            if (!text || !state.currentUserData.partnerId) return;
+
+            try {
+                const chatId = getChatId();
+
+                await db.collection('chats')
+                    .doc(chatId)
+                    .collection('messages')
+                    .add({
+                        text,
+                        senderId: state.currentUser.uid,
+                        timestamp: new Date()
+                    });
+
+                input.value = '';
+            } catch (error) {
+                alert('Error sending message: ' + error.message);
+            }
+        }
+
+        // ==================== LOGOUT ====================
+        async function handleLogout() {
+            try {
+                cleanupListeners();
+                await auth.signOut();
+            } catch (error) {
+                alert('Error logging out: ' + error.message);
+            }
+        }
+
+        function cleanupListeners() {
+            if (state.messageUnsubscribe) {
+                state.messageUnsubscribe();
+                state.messageUnsubscribe = null;
+            }
+            if (state.callsUnsubscribe) {
+                state.callsUnsubscribe();
+                state.callsUnsubscribe = null;
+            }
+        }
+
+        // ==================== UTILITY FUNCTIONS ====================
+        function generateRoomId() {
+            return 'room-' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ==================== PWA MANIFEST ====================
+        function createAndRegisterManifest() {
+            const manifest = {
+                name: "Together - Private Video Calls",
+                short_name: "Together",
+                description: "Private video calls for couples",
+                start_url: "/",
+                display: "standalone",
+                background_color: "#667eea",
+                theme_color: "#FF6B9D",
+                orientation: "portrait-primary",
+                icons: [
+                    {
+                        src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23FF6B9D' width='192' height='192'/><text x='50%' y='50%' font-size='120' dominant-baseline='middle' text-anchor='middle' font-family='system-ui'>💕</text></svg>",
+                        sizes: "192x192",
+                        type: "image/svg+xml",
+                        purpose: "any"
+                    }
+                ]
+            };
+
+            const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+            const manifestUrl = URL.createObjectURL(manifestBlob);
+
+            const link = document.createElement('link');
+            link.rel = 'manifest';
+            link.href = manifestUrl;
+            document.head.appendChild(link);
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('data:application/javascript,' + encodeURIComponent(`
+                    self.addEventListener('install', event => {
+                        event.waitUntil(self.skipWaiting());
+                    });
+                    self.addEventListener('activate', event => {
+                        event.waitUntil(self.clients.claim());
+                    });
+                    self.addEventListener('fetch', event => {
+                        // Offline support can be added here
+                    });
+                `)).catch(err => console.log('Service Worker registration failed:', err));
+            }
+        }
+
+        window.addEventListener('load', createAndRegisterManifest);
+    </script>
+</body>
+</html>
